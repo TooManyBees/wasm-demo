@@ -1,6 +1,8 @@
 (function() {
+    const wasmPath = name => `${name}/${name}.wasm`;
+
     async function loadAll({ name, desc, importObj }) {
-        return fetch(`${name}.wasm`)
+        return fetch(wasmPath(name))
             .then(r => r.arrayBuffer())
             .then(bytes => WebAssembly.instantiate(bytes, importObj))
             // .then(wasm => wasm.instance.exports)
@@ -8,7 +10,7 @@
     }
 
     async function loadAllAsync({ name, desc, importObj }) {
-        return WebAssembly.instantiateStreaming(fetch(`${name}.wasm`), importObj)
+        return WebAssembly.instantiateStreaming(fetch(wasmPath(name)), importObj)
             // .then(wasm => wasm.instance.exports)
             .then(wasm => ({ name, desc, wasm, importObj }));
     }
