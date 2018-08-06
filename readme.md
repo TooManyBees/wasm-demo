@@ -109,3 +109,4 @@ glue needed for:
 https://webassembly.studio
 https://blog.scottlogic.com/2018/04/26/webassembly-by-hand.html
 https://developer.mozilla.org/en-US/docs/WebAssembly/Concepts
+https://webassembly.org/docs/semantics/
