@@ -1,35 +1,32 @@
-(function() {
-    const wasmPath = name => `${name}/${name}.wasm`;
+const wasmPath = name => `${name}/${name}.wasm`;
 
-    async function loadAll({ name, desc, importObj }) {
-        return fetch(wasmPath(name))
-            .then(r => r.arrayBuffer())
-            .then(bytes => WebAssembly.instantiate(bytes, importObj))
-            // .then(wasm => wasm.instance.exports)
-            .then(wasm => ({ name, desc, wasm, importObj }));
+async function loadAsync({ name, importObj }) {
+    return WebAssembly.instantiateStreaming(fetch(wasmPath(name)), importObj)
+        .then(wasm => wasm.instance.exports);
+}
+
+function exampleSource(name, importObj, prefix) {
+    prefix = prefix || '';
+    if (importObj) {
+        return `
+${prefix}
+importObj = ${serialize(importObj)};
+WebAssembly.instantiateStreaming(
+    fetch("${name}.wasm"),
+    importObj,
+).then(wasm => { window.${name} = wasm.instance.exports; });
+`.trim();
+    } else {
+        return `
+${prefix}
+WebAssembly.instantiateStreaming(fetch("${name}.wasm"), {})
+.then(wasm => { window.${name} = wasm.instance.exports; });
+`.trim();
     }
+}
 
-    async function loadAllAsync({ name, desc, importObj }) {
-        return WebAssembly.instantiateStreaming(fetch(wasmPath(name)), importObj)
-            // .then(wasm => wasm.instance.exports)
-            .then(wasm => ({ name, desc, wasm, importObj }));
-    }
-
-    function loadExamples(examples) {
-        window.examples = examples;
-            Promise.all(examples.map(loadAllAsync)).then(function(results) {
-            const windowVar = 'wasm';
-            const { wasm, labels } = results.reduce(function(acc, { name, desc, wasm, importObj }) {
-                acc.wasm[name] = Object.assign({ importObj }, wasm);
-                acc.labels.push(`${windowVar}.${name} (${desc})`);
-                return acc
-            }, { wasm: {}, labels: [] });
-
-            window[windowVar] = wasm;
-            console.log(labels.join("\n"));
-        })
-        .catch(e => console.warn(e));
-    }
-
-    window.loadExamples = loadExamples;
-})()
+function fakeObj(source) {
+    function f() {};
+    f.toString = () => source;
+    return f;
+}

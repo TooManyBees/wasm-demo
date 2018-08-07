@@ -4,29 +4,36 @@
     <meta charset="utf-8">
     <link href='/bee32.png' rel='icon' type='image/png'>
     <title>2Wat2Wasm</title>
+    <script src="./serialize.js"></script>
     <script src="./demo.js"></script>
+    <script>
+        const examples = {
+            hello_wasm: exampleSource("hello_wasm"),
+            imported_func: exampleSource("imported_func", {
+                import: {
+                    getTimestamp: () => Date.now(),
+                    logTime: (value) => console.log(`Elapsed time: ${value} ms`),
+                },
+            }),
+            imported_memory: exampleSource("imported_memory", {
+                import: {
+                    memory: fakeObj("mem"),
+                },
+            }, "mem = new WebAssembly.Memory({ initial: 1 });\narray = new Uint32Array(mem.buffer);"),
+        };
+    </script>
 </head>
 <body>
+    <div id="examples"></div>
     <script>
-        const examples = [
-            {
-                name: "hello_wasm",
-                desc: "the Wasm hello world",
-                importObj: {},
-            },
-            {
-                name: "imported_func",
-                desc: "calling JS functions from within Wasm",
-                importObj: {
-                    import: {
-                        getTimestamp: () => Date.now(),
-                        logTime: (value) => console.log(`Elapsed time: ${value} ms`),
-                    },
-                },
-            }
-        ];
-
-        window.addEventListener("load", () => loadExamples(examples));
+        const examplesDiv = document.getElementById("examples");
+        for (name in examples) {
+            const pre = document.createElement("pre");
+            const code = document.createElement("code");
+            code.textContent = examples[name];
+            pre.appendChild(code);
+            examplesDiv.appendChild(pre);
+        }
     </script>
 </body>
 </html>
