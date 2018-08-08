@@ -17,9 +17,13 @@ class Hangman {
     });
   }
 
+  // The public methods we want to expose
+
   guess(char) {
-    let { ptr, len } = this.newString(char);
-    this.module.guess(this.handle, ptr, len);
+    let { ptr, len } = this.newString(char.toLowerCase());
+    const res = this.module.guess(this.handle, ptr, len);
+    this.module.dealloc(ptr, len);
+    return res;
   }
 
   unmasked() {
@@ -27,6 +31,13 @@ class Hangman {
     return this.readCString(ptr);
   }
 
+  guessesRemaining() {
+    return this.module.guesses_remaining(this.handle);
+  }
+
+  // Encode a string in utf-8 bytes, allocate space for it
+  // in Wasm memory, then store it in the space provided.
+  // Return the address and length.
   newString(string) {
     const stringBytes = this.stringEncoder.encode(string);
     const len = stringBytes.length;
@@ -38,6 +49,9 @@ class Hangman {
     return { ptr, len };
   }
 
+  // Read a null-terminated string from Wasm memory, given
+  // a pointer to the start of the string. Deallocates
+  // the string when complete.
   readCString(ptr) {
     const memory = new Uint8Array(this.module.memory.buffer, ptr);
     function* getCStringBytes(ptr) {

@@ -1,65 +1,12 @@
 use std::{mem, ptr, slice, str};
-use std::num::NonZeroU8;
 use std::ffi::CString;
+
+mod hangman;
+use hangman::{Hangman, Status};
 
 extern {
     fn win();
     fn lose();
-}
-
-const MAX_GUESSES: u8 = 6;
-
-pub struct Hangman {
-    guesses: u8,
-    phrase: Vec<char>,
-    unmasked: Vec<Option<NonZeroU8>>,
-}
-
-impl Hangman {
-    fn new(phrase: &str) -> Hangman {
-        let vec_phrase: Vec<char> = phrase.chars().collect();
-        let vec_unmasked = vec![None; vec_phrase.len()];
-        Hangman {
-            guesses: 0,
-            phrase: vec_phrase,
-            unmasked: vec_unmasked,
-        }
-    }
-
-    fn guess(&mut self, c: char) -> bool {
-        if c == '\0' {
-            self.guesses += 1;
-            return false;
-        }
-        // Decrement guesses if wrong
-        if !self.phrase.contains(&c) {
-            self.guesses += 1;
-        }
-        // Check to see if player lost
-        if self.guesses >= MAX_GUESSES {
-            unsafe { lose() }
-            return false;
-        }
-
-        // Find indices of the matching letter
-        let mut indices = vec![];
-        for (idx, letter) in self.phrase.iter().enumerate() {
-            if *letter == c {
-                indices.push(idx);
-            }
-        }
-        // Unmask the same indices
-        unsafe {
-            for idx in indices.into_iter() {
-                self.unmasked[idx] = Some(NonZeroU8::new_unchecked(c as u8));
-            }
-        }
-        // Check to see if player won
-        if self.unmasked.iter().all(|c| c.is_some()) {
-            unsafe { win() }
-        }
-        return true;
-    }
 }
 
 #[no_mangle]
@@ -98,9 +45,9 @@ pub extern fn init(str_ptr: *mut u8, len: usize) -> *mut Hangman {
 #[no_mangle]
 pub extern fn guesses_remaining(ptr: *mut Hangman) -> u8 {
     let hangman = unsafe { Box::from_raw(ptr) };
-    let val = hangman.guesses;
+    let val = hangman.guesses_remaining();
     mem::forget(hangman);
-    MAX_GUESSES - val
+    val
 }
 
 #[no_mangle]
@@ -113,25 +60,30 @@ pub extern fn guess(ptr: *mut Hangman, str_ptr: *mut u8, len: usize) -> bool {
     let result = if let Ok(string) = str::from_utf8(slice) {
         // Already asserted that length is > 0 and string is valid utf8
         let c = string.chars().nth(0).unwrap();
-        hangman.guess(c);
-        true
+        hangman.guess(c)
     } else {
-        false
+        Status::Invalid
     };
     mem::forget(hangman);
-    result
+    match result {
+        Status::Correct => true,
+        Status::Wrong => false,
+        Status::Invalid => false,
+        Status::Win => {
+            unsafe { win(); }
+            true
+        },
+        Status::Lose => {
+            unsafe { lose(); }
+            false
+        }
+    }
 }
 
 #[no_mangle]
 pub extern fn unmasked(ptr: *mut Hangman) -> *const i8 {
     let hangman = unsafe { Box::from_raw(ptr) };
-    let unmasked: String = hangman.unmasked.iter().map(|c| {
-        if let Some(letter) = c {
-            letter.get().into()
-        } else {
-            ' '
-        }
-    }).collect();
+    let unmasked = hangman.unmasked();
     mem::forget(hangman);
 
     let unmasked_cstring = CString::new(unmasked).unwrap();

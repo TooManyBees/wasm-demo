@@ -105,6 +105,9 @@ glue needed for:
     text passing
     allocation
 
+## hangman
+
+hey look it's a hangman game
 
 https://webassembly.studio
 https://blog.scottlogic.com/2018/04/26/webassembly-by-hand.html
