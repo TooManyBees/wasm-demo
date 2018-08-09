@@ -40,7 +40,7 @@ class Hangman {
   // Return the address and length.
   newString(string) {
     const stringBytes = this.stringEncoder.encode(string);
-    const len = stringBytes.length;
+    const len = stringBytes.byteLength;
     const ptr = this.module.alloc(len);
     const memory = new Uint8Array(this.module.memory.buffer);
     for (let i = 0; i < len; i++) {
@@ -67,7 +67,7 @@ class Hangman {
 
     let stringBytes = new Uint8Array(getCStringBytes(ptr));
     let string = this.stringDecoder.decode(stringBytes);
-    this.module.dealloc_string(ptr);
+    this.module.dealloc_string(ptr, stringBytes.byteLength + 1);
     return string;
   }
 

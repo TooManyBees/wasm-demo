@@ -1,5 +1,4 @@
 use std::{mem, ptr, slice, str};
-use std::ffi::CString;
 
 mod hangman;
 use hangman::{Hangman, Status};
@@ -23,8 +22,8 @@ pub extern fn dealloc(ptr: *mut u8, len: usize) {
 }
 
 #[no_mangle]
-pub extern fn dealloc_string(ptr: *mut i8) {
-    let _str = unsafe { CString::from_raw(ptr) };
+pub extern fn dealloc_string(ptr: *mut u8, len: usize) {
+    let _str = unsafe { String::from_raw_parts(ptr, len, len) };
 }
 
 #[no_mangle]
@@ -81,15 +80,16 @@ pub extern fn guess(ptr: *mut Hangman, str_ptr: *mut u8, len: usize) -> bool {
 }
 
 #[no_mangle]
-pub extern fn unmasked(ptr: *mut Hangman) -> *const i8 {
+pub extern fn unmasked(ptr: *mut Hangman) -> *const u8 {
     let hangman = unsafe { Box::from_raw(ptr) };
-    let unmasked = hangman.unmasked();
+    let mut unmasked = hangman.unmasked();
     mem::forget(hangman);
 
-    let unmasked_cstring = CString::new(unmasked).unwrap();
-    let cstring_ptr = unmasked_cstring.as_ptr();
-    mem::forget(unmasked_cstring);
-    cstring_ptr
+    // Make our own c-style string instead of using CString
+    unmasked.push('\0');
+    let string_ptr = unmasked.as_ptr();
+    mem::forget(unmasked);
+    string_ptr
 }
 
 #[no_mangle]
