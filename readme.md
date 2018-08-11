@@ -56,14 +56,127 @@ downloaded, unlike `instantiateStreaming` which begins with the 1st byte.
 
 # "hello wasm!"
 
-do the hello world from developer.mozilla.org
-note about import object names
-the top level is arbitrarily named; rust toolchain uses "env", other toolchains use "import", whatever
+```javascript
+WebAssembly.instantiateStreaming(fetch("hello_wasm.wasm"), {})
+.then(wasm => { window.hello_wasm = wasm.instance.exports; });
+```
+
+exported wasm functions can take number arguments and return number
+values (i32, i64, f32, f64) but nothing else
+
+# importing functions
+
+In `[imported_func.wat](imported_func/imported_func.wat)`, the first
+two lines are
+
+```wasm
+(func $logTime (import "import" "logTime") (param f64))
+(func $getTimestamp (import "import" "getTimestamp") (result f64))
+;;                                    ^^^^^^^^^^^^ imported function
+;;                           ^^^^^^ module name
+```
+
+which declares what imports are required for the Wasm module to be
+imported. The string `"import"` directly correlates to the key name
+`"import"` in the import object below. *This name is totally arbitrary.*
+Some examples use `"import"` or `"js"`, and LLVM picks `"env"` for you.
+*You can have multiple top level module names.*
+
+```javascript
+importObj = {
+    import: {
+        getTimestamp: () => Date.now(),
+        logTime: (value) => console.log(`Elapsed time: ${value} ms`),
+        // if we added extra key/value pairs here, they would be ignored
+    }
+};
+WebAssembly.instantiateStreaming(
+    fetch("imported_func.wasm"),
+    importObj,
+).then(wasm => { window.imported_func = wasm.instance.exports; });
+```
+
+This wasm module exports one function `doWork` that takes a number, and
+increments a value that many times, just to spend a noticable amount of
+time. It uses the imported functions `getTimestamp` to compute the
+amount of time it spent incrementing that variable, and then invokes
+`logTime` to `console.log` the number of ms.
+
+```javascript
+imported_func.doWork(10);
+// 0ms
+imported_func.doWork(10000000);
+// 5ms
+```
+
+# memory
 
 rust demo with state object
 pass pointers back and forth
 note the low value of the pointer (address space is small!)
-go through the exported functions
+
+## importing/exporting
+
+```javascript
+mem = new WebAssembly.Memory({ initial: 1 });
+array = new Uint32Array(mem.buffer);
+importObj = {
+    import: {
+        memory: mem
+    }
+};
+WebAssembly.instantiateStreaming(
+    fetch("imported_memory.wasm"),
+    importObj,
+).then(wasm => { window.imported_memory = wasm.instance.exports; });
+```
+
+## growing
+
+```javascript
+WebAssembly.instantiateStreaming(fetch("grow_memory.wasm"), {})
+.then(wasm => { window.grow_memory = wasm.instance.exports; });
+```
+
+WebAssembly memory can grow in pages of 65536 bytes. This program
+starts with one page of memory exported. It exports one function
+to store a `f64` at address 0, and one function to grow the memory
+by one page at a time.
+
+```javascript
+// What size is the memory initially? 65536 bytes
+grow_memory.memory.buffer.byteLength;
+
+// Store a number at address 0 and confirm it's there
+grow_memory.store(0.75);
+array = new Float64Array(grow_memory.memory.buffer);
+
+// Grow memory with the exported grow function;
+grow_memory.grow();
+
+// What size is the memory now? 131072 bytes
+grow_memory.memory.buffer.byteLength;
+
+// But when memory is resized, its buffer is invalidated and a new
+// one is created. So `array` points to nothing now.
+array.buffer.byteLength === 0;
+
+// We need to recreate it after every grow
+array = new Float64Array(grow_memory.memory.buffer);
+```
+
+```javascript
+// Since the program exports its memory, we can use the Memory object's
+// Javascript API to grow it.
+grow_memory.memory.grow(1);
+
+// The program specified a maximum of 3 pages. It's now at its max size.
+grow_memory.memory.grow(1);
+// Uncaught RangeError: WebAssembly.Memory.grow(): maximum memory size exceeded
+
+// Or from the WebAssembly side, failure returns `-1`
+grow_memory.grow();
+```
 
 note that you can pass random numbers as the pointer
 increment (pointer+1), then check the value of (pointer)

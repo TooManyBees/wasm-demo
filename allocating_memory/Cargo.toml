@@ -1,0 +1,13 @@
+[package]
+name = "allocating_memory"
+version = "0.1.0"
+authors = ["Jesse Bees <jesse@toomanybees.com>"]
+
+[lib]
+crate-type = ["cdylib"]
+
+[profile.release]
+lto = true
+
+[dependencies]
+wee_alloc = "*"

@@ -20,6 +20,8 @@
                     memory: fakeObj("mem"),
                 },
             }, "mem = new WebAssembly.Memory({ initial: 1 });\narray = new Uint32Array(mem.buffer);"),
+            grow_memory: exampleSource("grow_memory"),
+            allocating_memory: exampleSource("allocating_memory"),
         };
     </script>
 </head>
