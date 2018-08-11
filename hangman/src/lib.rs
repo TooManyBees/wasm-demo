@@ -1,3 +1,8 @@
+extern crate wee_alloc;
+
+#[global_allocator]
+static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+
 use std::{mem, ptr, slice, str};
 
 mod hangman;
