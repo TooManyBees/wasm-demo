@@ -1,0 +1,53 @@
+body {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+p, pre {
+  margin: 0;
+}
+
+.part {
+  visibility: hidden;
+  color: red;
+}
+#graphic[guesses="5"] .part.g5 {
+  visibility: initial;
+}
+#graphic[guesses="4"] .part.g4 {
+  visibility: initial;
+}
+#graphic[guesses="3"] .part.g3 {
+  visibility: initial;
+}
+#graphic[guesses="2"] .part.g2 {
+  visibility: initial;
+}
+#graphic[guesses="1"] .part.g1 {
+  visibility: initial;
+}
+#graphic[guesses="0"] .part.g0 {
+  visibility: initial;
+}
+
+#unmasked {
+  border: 0.5px dotted cornflowerblue;
+}
+.unmasked-label {
+  color: cornflowerblue;
+  font-size: 10px;
+}
+
+#wrong-guesses {
+  border: 0.5px dotted palevioletred;
+}
+.wrong-label {
+  color: palevioletred;
+  font-size: 10px;
+}
+
+.sky {
+  color: lightgray;
+}

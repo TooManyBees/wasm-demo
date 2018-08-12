@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Wasm Hangman</title>
+  <script src="hangman.js"></script>
+  <link rel="stylesheet" type="text/css" href="hangman.css">
+  <meta charset="utf-8">
+</head>
+<body>
+  <pre><code id="graphic" guesses><span class="sky"> ☁     🌞  ☁</span>
+,___. <span class="sky">☁</span>
+|   |
+|   <span class="part g5 g4 g3 g2 g1 g0">O</span>
+|  <span class="part g3 g2 g1 g0">/</span><span class="part g4 g3 g2 g1 g0">|</span><span class="part g2 g1 g0">\</span>
+|  <span class="part g1 g0">/</span> <span class="part g0">\</span>
++======+
+|░░░░░░|
+|░░░░░░|</code></pre>
+
+  <div>
+    <form id="input">
+      <input
+        placeholder="guess a letter"
+        type="text"
+        name="guess"
+        id="input-field"
+        maxlength=1
+      >
+    </form>
+    <span class="unmasked-label">Revealed phrase:</span>
+    <p id="unmasked">&nbsp;</p>
+    <span class="wrong-label">Wrong guesses:</span>
+    <p id="wrong-guesses">&nbsp;</p>
+  </div>
+
+  <script>
+    const game = new Hangman("bees", {
+      win: () => {
+        endGame();
+      },
+      lose: () => {
+        endGame();
+      },
+    });
+    const inputField = document.getElementById("input-field");
+    const input = document.getElementById("input");
+    const graphic = document.getElementById("graphic");
+    const unmasked = document.getElementById("unmasked");
+    const wrongGuesses = new Set();
+    const wrongGuessesDom = document.getElementById("wrong-guesses");
+
+    function guess(game, char) {
+      if (game.guess(char)) {
+        displayPhrase(game);
+      } else {
+        addWrongLetter(game, char);
+        displayGraphic(game);
+      }
+    }
+    input.addEventListener("submit", function(e) {
+      e.preventDefault();
+      if (inputField.value) {
+        console.info(`guessing '${inputField.value}'`);
+        guess(game, inputField.value);
+        inputField.value = "";
+      }
+    })
+
+
+    function displayGraphic(game) {
+      const remaining = game.guessesRemaining();
+      graphic.setAttribute("guesses", remaining.toString());
+    }
+
+    function displayPhrase(game) {
+      const unmaskedPhrase = game.unmasked().replace(/ /g, "_").split("").join(" ");
+      unmasked.textContent = unmaskedPhrase;
+    }
+
+    function addWrongLetter(game, char) {
+      if (!wrongGuesses.has(char)) {
+        wrongGuesses.add(char);
+        wrongGuessesDom.textContent = Array.from(wrongGuesses).sort().join(" ");
+      }
+    }
+
+    function endGame() {
+      inputField.disabled = true;
+      inputField.placeholder = "";
+    }
+  </script>
+</body>
+</html>
