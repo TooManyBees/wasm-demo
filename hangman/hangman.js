@@ -115,26 +115,17 @@ class ByteView {
   }
 
   get phrase() {
-    if (this.invalidated() || !this.cache.phrase) {
-      const hangman = this.hangman;
-      this.cache.phrase = new Uint32Array(this.array.buffer, hangman[0], hangman[1]);
-    }
-    return this.cache.phrase;
+    const hangman = this.hangman;
+    return new Uint32Array(this.array.buffer, hangman[0], hangman[1]);
   }
 
   get mask() {
-    if (this.invalidated() || !this.cache.mask) {
-      const hangman = this.hangman;
-      this.cache.mask = new Uint8ClampedArray(this.array.buffer, hangman[3], hangman[4]);
-    }
-    return this.cache.mask;
+    const hangman = this.hangman;
+    return new Uint8ClampedArray(this.array.buffer, hangman[3], hangman[4]);
   }
 
   get guessed() {
-    if (this.invalidated() || !this.cache.guessed) {
-      const hangman = this.hangman;
-      this.cache.guessed = new Uint32Array(this.array.buffer, hangman[6], hangman[7]);
-    }
-    return this.cache.guessed;
+    const hangman = this.hangman;
+    return new Uint32Array(this.array.buffer, hangman[6], hangman[7]);
   }
 }

@@ -72,7 +72,7 @@ pub extern fn guess(ptr: *mut Hangman, str_ptr: *mut u8, len: usize) -> bool {
     match result {
         Status::Correct => true,
         Status::Wrong => false,
-        Status::Invalid => false,
+        Status::Invalid => true, // doesn't modify state
         Status::Win => {
             unsafe { win(); }
             true

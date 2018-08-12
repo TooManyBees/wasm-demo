@@ -61,3 +61,19 @@ p, pre {
 .sky {
   color: lightgray;
 }
+
+#bytes[hover="phrase"] [hover="phrase"] {
+  background-color: #fdcbfd;
+}
+
+#bytes[hover="mask"] [hover="mask"] {
+  background-color: #afd9fb;
+}
+
+#bytes[hover="guessed"] [hover="guessed"] {
+  background-color: #e3ffc3;
+}
+
+#bytes[hover="num-guesses"] [hover="num-guesses"] {
+  background-color: #f9f9ad;
+}

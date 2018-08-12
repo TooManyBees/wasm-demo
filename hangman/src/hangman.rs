@@ -11,7 +11,10 @@ impl Hangman {
     pub fn new(phrase: &str) -> Hangman {
         let vec_phrase: Vec<char> = phrase.chars().collect();
         let vec_unmasked = vec![None; vec_phrase.len()];
-        let vec_guessed = Vec::with_capacity(vec_phrase.len() + MAX_GUESSES as usize);
+        // A proper capacity should be `vec_phrase.len() + MAX_GUESSES`.
+        // But this gives us the chance to observe the vec reallocating
+        // its buffer as we play the game.
+        let vec_guessed = Vec::with_capacity(MAX_GUESSES);
         Hangman {
             guesses: 0,
             phrase: vec_phrase,
