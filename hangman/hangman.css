@@ -7,6 +7,7 @@ p, pre {
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .part {
@@ -34,6 +35,7 @@ p, pre {
 
 #unmasked {
   border: 0.5px dotted cornflowerblue;
+  text-align: center;
 }
 .unmasked-label {
   color: cornflowerblue;
@@ -42,10 +44,18 @@ p, pre {
 
 #wrong-guesses {
   border: 0.5px dotted palevioletred;
+  text-align: center;
 }
 .wrong-label {
   color: palevioletred;
   font-size: 10px;
+}
+
+#input-field {
+  text-align: center;
+}
+#input-field::placeholder {
+  color: lightgray;
 }
 
 .sky {

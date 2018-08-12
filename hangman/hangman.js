@@ -1,5 +1,5 @@
 class Hangman {
-  constructor(string, { win = this.win, lose = this.lose } = {}) {
+  constructor(string, { win = this.win, lose = this.lose, onload } = {}) {
     this.stringEncoder = new TextEncoder('utf-8');
     this.stringDecoder = new TextDecoder('utf-8');
     WebAssembly.instantiateStreaming(fetch("hangman.wasm"), {
@@ -15,7 +15,8 @@ class Hangman {
       this.handle = this.module.init(ptr, len);
       this.module.dealloc(ptr, len);
       console.info(`Initialized game with phrase ${secretPhrase}`);
-    });
+    })
+    .then(() => onload(this));
   }
 
   // The public methods we want to expose
@@ -129,11 +130,11 @@ class ByteView {
     return this.cache.mask;
   }
 
-  get wrongGuesses() {
-    if (this.invalidated() || !this.cache.wrongGuesses) {
+  get guessed() {
+    if (this.invalidated() || !this.cache.guessed) {
       const hangman = this.hangman;
-      this.cache.alreadyGuessed = new Uint32Array(this.array.buffer, hangman[6], hangman[7]);
+      this.cache.guessed = new Uint32Array(this.array.buffer, hangman[6], hangman[7]);
     }
-    return this.cache.alreadyGuessed;
+    return this.cache.guessed;
   }
 }
