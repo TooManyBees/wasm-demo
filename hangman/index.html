@@ -32,16 +32,16 @@
       <span class="wrong-label">Wrong guesses:</span>
       <p id="wrong-guesses">&nbsp;</p>
     </div>
-    <pre id="bytes" hover>
-Hangman
-<code id="bytes-hangman"></code>
-Phrase
-<code id="bytes-phrase" hover="phrase"></code>
-Mask
-<code id="bytes-mask" hover="mask"></code>
-Guessed
-<code id="bytes-guessed" hover="guessed"></code></pre>
   </section>
+  <pre id="bytes" hover>
+Hangman <span class="aside">(Uint32Array)</span>
+<code id="bytes-hangman"></code>
+Phrase <span class="aside">(Uint32Array)</span>
+<code id="bytes-phrase" hover="phrase"></code>
+Mask <span class="aside">(Uint8Array)</span>
+<code id="bytes-mask" hover="mask"></code>
+Guessed <span class="aside">(Uint32Array)</span>
+<code id="bytes-guessed" hover="guessed"></code></pre>
 
   <div id="init-modal" class="disabled">
     <form id="init-form">
@@ -53,6 +53,7 @@ Guessed
       >
     </form>
   </div>
+  <h3 class="aside">jesse does not condone romanticizing the "Old West", Western expansion, or capital punishment</h2>
   <script src="hangman.js"></script>
   <script src="misc-dom.js"></script>
   <script src="index.js"></script>

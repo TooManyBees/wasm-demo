@@ -3,6 +3,7 @@ p, pre {
 }
 
 #contents {
+  margin-bottom: 10px;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -75,6 +76,10 @@ p, pre {
 
 #bytes[hover="num-guesses"] [hover="num-guesses"] {
   background-color: #f9f9ad;
+}
+
+.aside {
+  color: lightgray;
 }
 
 #init-modal {
