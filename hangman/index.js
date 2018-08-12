@@ -88,20 +88,16 @@ const Bytes = {
   },
 };
 
-const game = new Hangman("bees", {
-  win: () => {
-    endGame();
-    console.log("win!");
-  },
-  lose: () => {
-    endGame();
-    console.log("lose!");
-  },
-  onload: (game) => {
-    displayPhrase(game)
-    Bytes.init(game.byteView());
-  },
-});
+let game = null;
+function win() {
+  console.log("a winner is you!");
+  endGame();
+  graphic.classList.add("rainbowned");
+}
+function lose() {
+  endGame();
+  console.log("you have failed and dishonored your ancestors");
+}
 
 function guess(game, char) {
   if (game.guess(char)) {
@@ -120,7 +116,7 @@ input.addEventListener("submit", function(e) {
     guess(game, inputField.value);
     inputField.value = "";
   }
-})
+});
 
 
 function displayGraphic(game) {
@@ -163,3 +159,22 @@ document.getElementById("bytes-guessed").addEventListener("mouseenter", hoverOve
 bytes.addEventListener("mouseleave", function() {
   bytes.setAttribute("hover", "");
 });
+
+const inputModal = document.getElementById("init-modal");
+inputModal.classList.remove("disabled");
+
+document.getElementById("init-form").addEventListener("submit", function(e) {
+  e.preventDefault();
+  const phrase = document.getElementById("init-input").value;
+  if (phrase) {
+    game = new Hangman(phrase, {
+      win,
+      lose,
+      onload: (game) => {
+        displayPhrase(game)
+        Bytes.init(game.byteView());
+        inputModal.classList.add("disabled");
+      },
+    });
+  }
+})
