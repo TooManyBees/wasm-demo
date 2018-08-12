@@ -63,8 +63,11 @@ pub extern fn guess(ptr: *mut Hangman, str_ptr: *mut u8, len: usize) -> bool {
     let slice = unsafe { slice::from_raw_parts(str_ptr, len) };
     let result = if let Ok(string) = str::from_utf8(slice) {
         // Already asserted that length is > 0 and string is valid utf8
-        let c = string.chars().nth(0).unwrap();
-        hangman.guess(c)
+        if let Some(c) = string.chars().nth(0) {
+            hangman.guess(c)
+        } else {
+            Status::Invalid
+        }
     } else {
         Status::Invalid
     };
