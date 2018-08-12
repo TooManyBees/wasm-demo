@@ -1,12 +1,12 @@
-body {
+p, pre {
+  margin: 0;
+}
+
+#contents {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-}
-
-p, pre {
-  margin: 0;
 }
 
 .part {

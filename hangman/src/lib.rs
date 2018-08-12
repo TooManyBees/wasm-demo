@@ -47,7 +47,7 @@ pub extern fn init(str_ptr: *mut u8, len: usize) -> *mut Hangman {
 }
 
 #[no_mangle]
-pub extern fn guesses_remaining(ptr: *mut Hangman) -> u8 {
+pub extern fn guesses_remaining(ptr: *mut Hangman) -> usize {
     let hangman = unsafe { Box::from_raw(ptr) };
     let val = hangman.guesses_remaining();
     mem::forget(hangman);

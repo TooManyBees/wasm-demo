@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Wasm Hangman</title>
+  <script src="hangman.js"></script>
+  <link rel="stylesheet" type="text/css" href="hangman.css">
+  <meta charset="utf-8">
+</head>
+<body>
+  <section id="contents">
+    <pre><code id="graphic" guesses><span class="sky"> ☁     🌞  ☁</span>
+,___. <span class="sky">☁</span>
+|   |
+|   <span class="part g5 g4 g3 g2 g1 g0">O</span>
+|  <span class="part g3 g2 g1 g0">/</span><span class="part g4 g3 g2 g1 g0">|</span><span class="part g2 g1 g0">\</span>
+|  <span class="part g1 g0">/</span> <span class="part g0">\</span>
++======+
+|░░░░░░|
+|░░░░░░|</code></pre>
+
+    <div>
+      <form id="input">
+        <input
+          placeholder="guess a letter"
+          type="text"
+          name="guess"
+          id="input-field"
+          maxlength=1
+        >
+      </form>
+      <span class="unmasked-label">Revealed phrase:</span>
+      <p id="unmasked">&nbsp;</p>
+      <span class="wrong-label">Wrong guesses:</span>
+      <p id="wrong-guesses">&nbsp;</p>
+    </div>
+  </section>
+
+  <!-- 
+    Uint8ClampedArray(40) [224, 191, 17, 0, 4, 0, 0, 0, 4, 0, 0, 0, 240, 255, 17, 0, 4, 0, 0, 0, 4, 0, 0, 0, 192, 159, 17, 0, 10, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 1]
+
+    00..03 addr (phrase)
+    04..07 cap
+    08..11 len
+    12..15 addr (mask)
+    16..19 cap
+    20..23 len
+    24..27 addr (guessed)
+    28..31 cap
+    32..35 len
+    36..39 guesses
+   -->
+  <pre id="bytes">
+Hangman (Uint32Array)
+<code id="bytes-hangman"></code>
+Phrase (Uint32Array)
+<code id="bytes-phrase"></code>
+Mask (Uint8Array)
+<code id="bytes-mask"></code>
+Guessed (Uint32Array)
+<code id="bytes-guessed"></code></pre>
+
+  <script src="index.js"></script>
+</body>
+</html>

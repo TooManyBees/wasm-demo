@@ -79,4 +79,61 @@ class Hangman {
   lose() {
     console.log("you have lost and dishonored your ancestors");
   }
+
+  byteView() {
+    return new ByteView(this);
+  }
+}
+
+class ByteView {
+  constructor(game) {
+    this.game = game;
+    this.module = game.module;
+    this.cache = {};
+  }
+
+  invalidated() {
+    return !this.cache.array || !this.cache.array.buffer.byteLength;
+  }
+
+  get array() {
+    if (!this.cache.array || !this.cache.array.buffer.byteLength) {
+      this.cache = {
+        array: new Uint8ClampedArray(this.module.memory.buffer),
+      };
+    }
+    return this.cache.array;
+  }
+
+  get hangman() {
+    if (this.invalidated() || !this.cache.hangman) {
+      const hangman = new Uint32Array(this.array.buffer, this.game.handle, this.module.size_of()/4);
+      this.cache.hangman = hangman;
+    }
+    return this.cache.hangman;
+  }
+
+  get phrase() {
+    if (this.invalidated() || !this.cache.phrase) {
+      const hangman = this.hangman;
+      this.cache.phrase = new Uint32Array(this.array.buffer, hangman[0], hangman[1]);
+    }
+    return this.cache.phrase;
+  }
+
+  get mask() {
+    if (this.invalidated() || !this.cache.mask) {
+      const hangman = this.hangman;
+      this.cache.mask = new Uint8ClampedArray(this.array.buffer, hangman[3], hangman[4]);
+    }
+    return this.cache.mask;
+  }
+
+  get wrongGuesses() {
+    if (this.invalidated() || !this.cache.wrongGuesses) {
+      const hangman = this.hangman;
+      this.cache.alreadyGuessed = new Uint32Array(this.array.buffer, hangman[6], hangman[7]);
+    }
+    return this.cache.alreadyGuessed;
+  }
 }

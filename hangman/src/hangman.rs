@@ -1,11 +1,11 @@
 pub struct Hangman {
-    guesses: u8,
     phrase: Vec<char>,
     unmasked: Vec<Option<()>>,
     already_guessed: Vec<char>,
+    guesses: usize,
 }
 
-const MAX_GUESSES: u8 = 6;
+const MAX_GUESSES: usize = 6;
 
 impl Hangman {
     pub fn new(phrase: &str) -> Hangman {
@@ -65,7 +65,7 @@ impl Hangman {
         return Status::Correct;
     }
 
-    pub fn guesses_remaining(&self) -> u8 {
+    pub fn guesses_remaining(&self) -> usize {
         MAX_GUESSES - self.guesses
     }
 
