@@ -1,11 +1,11 @@
 class Hangman {
-  constructor(string) {
+  constructor(string, { win = this.win, lose = this.lose } = {}) {
     this.stringEncoder = new TextEncoder('utf-8');
     this.stringDecoder = new TextDecoder('utf-8');
     WebAssembly.instantiateStreaming(fetch("hangman.wasm"), {
       env: {
-        win: this.win.bind(this),
-        lose: this.lose.bind(this),
+        win: win.bind(this),
+        lose: lose.bind(this),
       }
     })
     .then(wasm => {
@@ -13,6 +13,7 @@ class Hangman {
       const secretPhrase = string.split(/\s+/).join("").toLowerCase();
       const { ptr, len } = this.newString(secretPhrase);
       this.handle = this.module.init(ptr, len);
+      this.module.dealloc(ptr, len);
       console.info(`Initialized game with phrase ${secretPhrase}`);
     });
   }
