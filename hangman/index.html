@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Wasm Hangman</title>
-  <script src="hangman.js"></script>
-  <link rel="stylesheet" type="text/css" href="hangman.css">
   <meta charset="utf-8">
+  <title>Wasm Hangman</title>
+  <link rel="stylesheet" type="text/css" href="hangman.css">
 </head>
 <body>
   <section id="contents">
@@ -43,6 +42,7 @@ Mask
 Guessed
 <code id="bytes-guessed" hover="guessed"></code></pre>
   </section>
+
   <div id="init-modal" class="disabled">
     <form id="init-form">
       <input
@@ -53,6 +53,8 @@ Guessed
       >
     </form>
   </div>
+  <script src="hangman.js"></script>
+  <script src="misc-dom.js"></script>
   <script src="index.js"></script>
 </body>
 </html>
