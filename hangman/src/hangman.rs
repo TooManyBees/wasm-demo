@@ -1,9 +1,7 @@
-use std::num::NonZeroU8;
-
 pub struct Hangman {
     guesses: u8,
     phrase: Vec<char>,
-    unmasked: Vec<Option<NonZeroU8>>,
+    unmasked: Vec<Option<()>>,
     already_guessed: Vec<char>,
 }
 
@@ -58,10 +56,8 @@ impl Hangman {
             }
         }
         // Unmask the same indices
-        unsafe {
-            for idx in indices.into_iter() {
-                self.unmasked[idx] = Some(NonZeroU8::new_unchecked(c as u8));
-            }
+        for idx in indices.into_iter() {
+            self.unmasked[idx] = Some(());
         }
         if self.unmasked.iter().all(|c| c.is_some()) {
             return Status::Win;
@@ -74,11 +70,10 @@ impl Hangman {
     }
 
     pub fn unmasked(&self) -> String {
-        self.unmasked.iter().map(|c| {
-            if let Some(letter) = c {
-                letter.get().into()
-            } else {
-                ' '
+        self.unmasked.iter().zip(self.phrase.iter()).map(|(&s, &c)| {
+            match s {
+                Some(_) => c,
+                None => ' ',
             }
         }).collect()
     }
@@ -176,5 +171,15 @@ mod test {
         } else {
             assert!(false, "Guessing a correct char after already losing should return Status::Lose");
         }
+    }
+
+    #[test]
+    fn test_multibyte_char() {
+        let mut game = Hangman::new("croc🐊");
+        if let Status::Correct = game.guess('🐊') {
+        } else {
+            assert!(false, "Guessing a multibyte char should work");
+        }
+        assert_eq!("    🐊", game.unmasked());
     }
 }
