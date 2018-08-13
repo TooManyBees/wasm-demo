@@ -1,9 +1,29 @@
+#![cfg_attr(target_arch = "wasm32", no_std)]
+#![cfg_attr(target_arch = "wasm32", feature(alloc, core_intrinsics, panic_implementation, lang_items, alloc_error_handler))]
+
 extern crate wee_alloc;
+#[cfg(target_arch = "wasm32")] #[macro_use] extern crate alloc;
 
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
-use std::{mem, ptr, slice, str};
+#[cfg(target_arch = "wasm32")]
+#[panic_implementation]
+#[no_mangle]
+pub fn panic(_: &::core::panic::PanicInfo) -> ! {
+    unsafe { ::core::intrinsics::abort(); }
+}
+
+#[cfg(target_arch = "wasm32")]
+#[alloc_error_handler]
+#[no_mangle]
+pub extern fn oom(_: ::core::alloc::Layout) -> ! {
+    unsafe { ::core::intrinsics::abort(); }
+}
+
+#[cfg(not(target_arch = "wasm32"))] use std::{mem, ptr, slice, str};
+#[cfg(target_arch = "wasm32")] use core::{mem, ptr, slice, str};
+#[cfg(target_arch = "wasm32")] use alloc::prelude::{Box, Vec, String};
 
 mod hangman;
 use hangman::{Hangman, Status};
