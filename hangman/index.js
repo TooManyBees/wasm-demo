@@ -71,6 +71,7 @@
           initModal.classList.add("disabled");
         },
       });
+      root.game = game;
     }
   });
 
