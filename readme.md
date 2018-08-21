@@ -1,13 +1,31 @@
 # hi
 
 this is about WebAssembly
-specifically the interface between JS land and Wasm land
-    the liminal space, for the art students in the crowd
+
+lots of guides exist that either focus on the "hello world" wasm
+program (`x_plus_one.wasm`) or the construction of a fully featured
+module with an automagically-written javascript side.
+
+this is specifically about the middle ground between those two poles:
+the interface between JS land and Wasm land
+
+# what is wasm
+
+`wasm` is a binary format:
+
+```text
+0061 736d 0100 0000 0107 0160 027f 7f01
+7f02 0b01 026a 7303 6d65 6d02 0001 0302
+0100 070e 010a 6163 6375 6d75 6c61 7465
+0000 0a32 0130 0102 7f20 0020 0141 046c
+6a21 0202 4003 4020 0020 0246 0d01 2003
+2000 2802 006a 2103 2000 4104 6a21 000c
+000b 0b20 030b
+```
 
 # wat
 
-`wasm` is a binary format. The text representation is called `wat`
-(to my eternal delight).
+The text representation is called `wat` (to my eternal delight).
 
 ```wasm
 (module
@@ -28,41 +46,99 @@ specifically the interface between JS land and Wasm land
 )
 ```
 
-It's a lisp. It's readable, but can't really scale beyond something
-this sized. You even need to account for i32s being 4 bytes as you
-increment the pointer while looping.
+It's a lisp. It's readable, to a limit. This function sums a list
+of 32 bit integers. Scaling beyond this by hand is a pain. You even
+need to account for i32s being 4 bytes as you increment the pointer
+while looping.
 
 Other examples are written in Rust. This is not a talk about Rust.
 Too many people already think I work for Mozilla. This is also not
 an endorsement of Rust, beyond saying that it has the best wasm
 tool chain. The alternative is emscripten which takes 45 minutes
-to build and about 10GB.
+and about 10GB to build. Installing Rust and the wasm32 target is
+a fifteen minute job.
+
+# quick summary
+
+It's byte code, it runs in a virtual stack machine, it exposes
+an API that the browser and Node can access.
+
+Some use cases of wasm modules:
+* expensive computation (think media codecs)
+* you just want to write in not-js for a specific thing
+* pixel crunching?
+    * (unfortunately, `<canvas>` jealously guards its bytes like a dragon)
+* like, who cares
+    * we're past demanding a use case justification for javascript
+    * so let's skip that whole argument for wasm's adoption while we're at it
+
+# what can't wasm do?
+
+* handle exceptions
+    * errors stop execution of a fn and raise an exception in JS land
+* return anything except numbers to JS land
+    * though you can return pointers to something that can be represented as byte arrays
+    * which doesn't include JS objects
+* reach outside of its address space
+
+Javascript glue code needed for:
+* allocation
+* re-referencing memory buffer after it grew/moved
+* passing strings, arrays
 
 # loading
 
-`WebAssembly.instantiateStreaming(fetch("url.wasm"), {}).then(wasm => ...)`
+Here's how you load and instantiate a wasm program, but it won't
+work for you the first time.
+
+```javascript
+WebAssembly.instantiateStreaming(fetch("url.wasm"), {})
+.then(wasm => ...)
+```
 
 ## Your first hiccup after skimming a "hello world" tutorial
 
-You need the `Content-Type: application/webassembly` header.
+Your browser demands the `Content-Type: application/webassembly` header.
 `file://` protocol won't add a content type, and no server currently
 maps the `wasm` extension to that without manual config.
 
-When you can't get the right response header:
-`fetch("url.wasm").then(response => response.arrayBuffer()).then(bytes => WebAssembly.instantiate(bytes, {})).then(wasm => ...)`
+Either add the right mime type detection to your webserver or do this:
+
+```javascript
+fetch("url.wasm")
+.then(response => response.arrayBuffer())
+.then(bytes => WebAssembly.instantiate(bytes, {}))
+.then(wasm => ...)
+```
 
 This blocks validation and instantiation until the whole module is
 downloaded, unlike `instantiateStreaming` which begins with the 1st byte.
 
 # "hello wasm!"
 
+The `[hello world program](hello_wasm/hello_wasm.wat)` of WebAssembly
+is adding 1 to a number.
+
 ```javascript
 WebAssembly.instantiateStreaming(fetch("hello_wasm.wasm"), {})
 .then(wasm => { window.hello_wasm = wasm.instance.exports; });
 ```
 
-exported wasm functions can take number arguments and return number
-values (i32, i64, f32, f64) but nothing else
+```javascript
+window.hello_wasm.add_one(5)
+// => 6
+```
+
+Wasm can only represent number types `i32`, `i64`, `f32`, `f64`, so
+its exported functions can only accept or return the javascript
+`Number` type. Non-numbers will get coerced to zero.
+
+```javascript
+window.hello_wasm.add_one("Hi there!")
+// => 1
+window.hello_wasm.add_one(NaN)
+// => 1
+```
 
 # importing functions
 
@@ -85,9 +161,8 @@ Some examples use `"import"` or `"js"`, and LLVM picks `"env"` for you.
 ```javascript
 importObj = {
     import: {
-        getTimestamp: () => Date.now(),
+        getTimestamp: Date.now.bind(date), // `bind` works as expected
         logTime: (value) => console.log(`Elapsed time: ${value} ms`),
-        // if we added extra key/value pairs here, they would be ignored
     }
 };
 WebAssembly.instantiateStreaming(
@@ -104,18 +179,24 @@ amount of time it spent incrementing that variable, and then invokes
 
 ```javascript
 imported_func.doWork(10);
-// 0ms
+// Elapsed time: 0ms
 imported_func.doWork(10000000);
-// 5ms
+// Elapsed time: 5ms
 ```
 
 # memory
 
-rust demo with state object
-pass pointers back and forth
-note the low value of the pointer (address space is small!)
+WebAssembly has a heap in the form of `WebAssembly.Memory`.
+A Wasm program can accept a `Memory` imported from its environment,
+or it can create its own and export it for the environment to access.
+Or it can create its own memory and keep it to itself!
 
 ## importing/exporting
+
+The program `[imported_memory](imported_memory/imported_memory.wat)`
+accepts an imported `Memory` object. With is exported function
+`double(ptr, len)`, it doubles the `len`-element sub-array of `Uint32`s
+starting at address `ptr`.
 
 ```javascript
 mem = new WebAssembly.Memory({ initial: 1 });
@@ -131,7 +212,23 @@ WebAssembly.instantiateStreaming(
 ).then(wasm => { window.imported_memory = wasm.instance.exports; });
 ```
 
+```javascript
+const ptr = 5;
+const len = 10;
+for (n in array.slice(ptr, ptr + len)) {
+    array[ptr + parseInt(n)] = parseInt(n);
+}
+// Uint32Array(10) [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+imported_memory.doube(ptr, len);
+// Uint32Array(10) [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]
+```
+
+The program could just have easily defined its memory internally,
+the exported it for the Javascript code to work with.
+
 ## growing
+
+`[grow_memory](grow_memory/grow_memory.wat)`
 
 ```javascript
 WebAssembly.instantiateStreaming(fetch("grow_memory.wasm"), {})
@@ -178,6 +275,10 @@ grow_memory.memory.grow(1);
 grow_memory.grow();
 ```
 
+# using an allocator
+
+`[allocating_memory](allocating_memory/allocating_memory.wat)`
+
 note that you can pass random numbers as the pointer
 increment (pointer+1), then check the value of (pointer)
 note that the address of state is larger than the original memory size
@@ -185,6 +286,14 @@ note that the address of state is larger than the original memory size
     by 64k, the size of 1 webassembly page
     you can grow memory with memory.prototype.grow; wasm code can grow itself too
     growing beyond its capacity raises an exception in JS land
+look at the size of that pointer!
+    It's kind of low for a pointer
+    But it's also not at zero
+    There's state for the allocator taking up space
+    Also, LLVM creates the shadow stack
+        since wasm can only represent i32/i64/f32/f64, structs
+        can't go on the heap. They're reserved their own space
+        on the heap
 
 let's return some strings
     c-style with null bytes: return the address it starts at
@@ -200,23 +309,6 @@ let's export some memory
     dynamic linking between modules, in JS
 
 we obviously need glue code to deal with shared memory, tables, and strings
-
-todo: use cases?
-    expensive computation
-    just want to write in not-js for a specific thing
-    canvas? also consider shaders though
-
-what can't wasm do?
-    handle exceptions; errors stop execution of a fn and raise an exception in JS land
-    return anything except numbers to JS land
-        though you can return pointers to something that can be represented as byte arrays
-        which doesn't include JS objects
-    reach outside of its address space
-
-glue needed for:
-    re-referencing memory buffer after it grew/moved
-    text passing
-    allocation
 
 ## hangman
 
