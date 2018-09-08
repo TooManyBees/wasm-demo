@@ -219,7 +219,7 @@ for (n in array.slice(ptr, ptr + len)) {
     array[ptr + parseInt(n)] = parseInt(n);
 }
 // Uint32Array(10) [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-imported_memory.doube(ptr, len);
+imported_memory.double(ptr, len);
 // Uint32Array(10) [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]
 ```
 
