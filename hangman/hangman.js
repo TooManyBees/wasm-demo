@@ -89,27 +89,25 @@ class Hangman {
 
 class ByteView {
   constructor(game) {
-    this.game = game;
+    this.handle = game.handle;
     this.module = game.module;
-    this.cache = {};
+    this.cache = { buffer: game.module.memory.buffer };
   }
 
   invalidated() {
-    return !this.cache.array || !this.cache.array.buffer.byteLength;
+    return !this.cache.buffer.byteLength;
   }
 
-  get array() {
-    if (!this.cache.array || !this.cache.array.buffer.byteLength) {
-      this.cache = {
-        array: new Uint8ClampedArray(this.module.memory.buffer),
-      };
+  get buffer() {
+    if (this.invalidated()) {
+      this.cache = { buffer: this.module.memory.buffer };
     }
-    return this.cache.array;
+    return this.cache.buffer;
   }
 
   get hangman() {
     if (this.invalidated() || !this.cache.hangman) {
-      const hangman = new Uint32Array(this.array.buffer, this.game.handle, this.module.size_of()/4);
+      const hangman = new Uint32Array(this.buffer, this.handle, this.module.size_of()/4);
       this.cache.hangman = hangman;
     }
     return this.cache.hangman;
@@ -117,16 +115,16 @@ class ByteView {
 
   get phrase() {
     const hangman = this.hangman;
-    return new Uint32Array(this.array.buffer, hangman[0], hangman[1]);
+    return new Uint32Array(this.buffer, hangman[0], hangman[1]);
   }
 
   get mask() {
     const hangman = this.hangman;
-    return new Uint8ClampedArray(this.array.buffer, hangman[3], hangman[4]);
+    return new Uint8ClampedArray(this.buffer, hangman[3], hangman[4]);
   }
 
   get guessed() {
     const hangman = this.hangman;
-    return new Uint32Array(this.array.buffer, hangman[6], hangman[7]);
+    return new Uint32Array(this.buffer, hangman[6], hangman[7]);
   }
 }
