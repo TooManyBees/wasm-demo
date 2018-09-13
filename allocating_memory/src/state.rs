@@ -38,7 +38,7 @@ pub extern fn increment(handle: *mut State, offset: i32) -> u32 {
 }
 
 #[no_mangle]
-pub extern fn consume(handle: *mut State) -> i32 {
+pub extern fn unwrap(handle: *mut State) -> i32 {
   let state = unsafe { Box::from_raw(handle) };
   state.value
 }

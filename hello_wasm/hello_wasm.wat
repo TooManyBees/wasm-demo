@@ -1,5 +1,6 @@
 (module
-    (func (export "add_one") (param $value i32) (result i32)
-        get_local $value
-        i32.const 1
-        i32.add))
+    (func (export "passthroughI32") (param $value i32) (result i32)
+      get_local $value)
+    (func (export "passthroughF32") (param $value f32) (result f32)
+      get_local $value)
+)
