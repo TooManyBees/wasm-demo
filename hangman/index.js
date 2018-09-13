@@ -45,15 +45,14 @@
   }
 
   function displayPhrase(game) {
-    const unmaskedPhrase = game.unmasked().replace(/ /g, "_").split("").join(" ");
-    unmasked.textContent = unmaskedPhrase;
+    unmasked.textContent = game.unmasked();
   }
 
   const wrongGuesses = new Set();
   function addWrongLetter(char) {
     if (!wrongGuesses.has(char)) {
       wrongGuesses.add(char);
-      wrongGuessesDom.textContent = Array.from(wrongGuesses).sort().join(" ");
+      wrongGuessesDom.textContent = Array.from(wrongGuesses).sort().join("");
     }
   }
 

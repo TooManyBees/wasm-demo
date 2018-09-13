@@ -2,7 +2,7 @@
 
 pub struct Hangman {
     phrase: Vec<char>,
-    unmasked: Vec<Option<()>>,
+    unmasked: Vec<bool>,
     already_guessed: Vec<char>,
     guesses: usize,
 }
@@ -12,7 +12,10 @@ const MAX_GUESSES: usize = 6;
 impl Hangman {
     pub fn new(phrase: &str) -> Hangman {
         let vec_phrase: Vec<char> = phrase.chars().collect();
-        let vec_unmasked = vec![None; vec_phrase.len()];
+        // Let any whitespace in the phrase start revealed
+        let vec_unmasked: Vec<bool> = vec_phrase.iter()
+        .map(|&c| c.is_whitespace())
+        .collect();
         // A proper capacity should be `vec_phrase.len() + MAX_GUESSES`.
         // But this gives us the chance to observe the vec reallocating
         // its buffer as we play the game.
@@ -32,7 +35,7 @@ impl Hangman {
         if self.guesses >= MAX_GUESSES {
             return Status::Lose;
         }
-        if self.unmasked.iter().all(|c| c.is_some()) {
+        if self.unmasked.iter().all(|&c| c) {
             return Status::Win;
         }
 
@@ -62,9 +65,9 @@ impl Hangman {
         }
         // Unmask the same indices
         for idx in indices.into_iter() {
-            self.unmasked[idx] = Some(());
+            self.unmasked[idx] = true;
         }
-        if self.unmasked.iter().all(|c| c.is_some()) {
+        if self.unmasked.iter().all(|&c| c) {
             return Status::Win;
         }
         return Status::Correct;
@@ -76,9 +79,10 @@ impl Hangman {
 
     pub fn unmasked(&self) -> String {
         self.unmasked.iter().zip(self.phrase.iter()).map(|(&s, &c)| {
-            match s {
-                Some(_) => c,
-                None => ' ',
+            if s {
+                c
+            } else {
+                '_'
             }
         }).collect()
     }

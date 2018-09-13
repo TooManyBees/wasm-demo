@@ -36,6 +36,7 @@ p, pre {
 #unmasked {
   border: 0.5px dotted cornflowerblue;
   text-align: center;
+  letter-spacing: 0.33rem;
 }
 .unmasked-label {
   color: cornflowerblue;
@@ -45,6 +46,7 @@ p, pre {
 #wrong-guesses {
   border: 0.5px dotted palevioletred;
   text-align: center;
+  letter-spacing: 0.33rem;
 }
 .wrong-label {
   color: palevioletred;

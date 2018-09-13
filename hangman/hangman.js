@@ -10,7 +10,7 @@ class Hangman {
     })
     .then(wasm => {
       this.module = wasm.instance.exports;
-      const secretPhrase = string.split(/\s+/).join("").toLowerCase();
+      const secretPhrase = string.split(/\s+/).join(" ").toLowerCase();
       const { ptr, len } = this.newString(secretPhrase);
       this.handle = this.module.init(ptr, len);
       this.module.dealloc(ptr, len);
@@ -56,7 +56,7 @@ class Hangman {
   // the string when complete.
   readCString(ptr) {
     const memory = new Uint8Array(this.module.memory.buffer, ptr);
-    function* getCStringBytes(ptr) {
+    function* getCStringBytes() {
       let offset = 0;
       while (memory[offset] !== 0) {
         if (memory[offset] === undefined) {
@@ -67,7 +67,7 @@ class Hangman {
       }
     }
 
-    let stringBytes = new Uint8Array(getCStringBytes(ptr));
+    let stringBytes = new Uint8Array(getCStringBytes());
     let string = this.stringDecoder.decode(stringBytes);
     this.module.dealloc_string(ptr, stringBytes.byteLength + 1);
     return string;
