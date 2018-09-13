@@ -51,23 +51,24 @@ class Hangman {
     return { ptr, len };
   }
 
+  *readUntilNul (bytes, ptr) {
+    let offset = 0;
+    while (bytes[offset] !== 0) {
+      if (bytes[offset] === undefined) {
+        throw new Error(`String ${ptr} continued into undefined memory at ${ptr+offset}`);
+      }
+      yield bytes[offset];
+      offset++;
+    }
+  }
+
   // Read a null-terminated string from Wasm memory, given
   // a pointer to the start of the string. Deallocates
   // the string when complete.
   readCString(ptr) {
     const memory = new Uint8Array(this.module.memory.buffer, ptr);
-    function* getCStringBytes() {
-      let offset = 0;
-      while (memory[offset] !== 0) {
-        if (memory[offset] === undefined) {
-          throw new Error(`String ${ptr} continued into undefined memory at ${ptr+offset}`);
-        }
-        yield memory[offset];
-        offset++;
-      }
-    }
 
-    let stringBytes = new Uint8Array(getCStringBytes());
+    let stringBytes = new Uint8Array(this.readUntilNul(memory, ptr));
     let string = this.stringDecoder.decode(stringBytes);
     this.module.dealloc_string(ptr, stringBytes.byteLength + 1);
     return string;
