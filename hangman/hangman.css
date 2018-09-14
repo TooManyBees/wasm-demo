@@ -1,3 +1,7 @@
+body {
+  position: relative;
+}
+
 p, pre {
   margin: 0;
 }
@@ -124,4 +128,23 @@ p, pre {
 }
 .rainbowned span {
   color: transparent !important;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(1turn);
+  }
+  to {
+    transform: rotate(0turn);
+  }
+}
+.winner {
+  position: absolute;
+  right: 10%;
+  bottom: 25%;
+  animation: 4s linear rotate infinite;
+  font-family: monospace;
+  font-size: 6rem;
+  line-height: 3.5rem;
+  font-weight: bolder;
 }

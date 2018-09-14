@@ -13,6 +13,11 @@
     inputField.disabled = true;
     inputField.placeholder = "";
     graphic.classList.add("rainbowned");
+    const winner = document.createElement('div');
+    winner.textContent = "WINNER";
+    winner.classList.add('winner');
+    winner.classList.add('rainbowned');
+    document.body.appendChild(winner);
   }
   function lose() {
     console.log("you have failed and dishonored your ancestors");
