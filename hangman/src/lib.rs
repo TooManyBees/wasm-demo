@@ -1,5 +1,5 @@
 #![cfg_attr(target_arch = "wasm32", no_std)]
-#![cfg_attr(target_arch = "wasm32", feature(alloc, core_intrinsics, panic_implementation, lang_items, alloc_error_handler))]
+#![cfg_attr(target_arch = "wasm32", feature(alloc, core_intrinsics, lang_items, alloc_error_handler))]
 
 extern crate wee_alloc;
 #[cfg(target_arch = "wasm32")] #[macro_use] extern crate alloc;
@@ -8,7 +8,7 @@ extern crate wee_alloc;
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[cfg(target_arch = "wasm32")]
-#[panic_implementation]
+#[panic_handler]
 #[no_mangle]
 pub fn panic(_: &::core::panic::PanicInfo) -> ! {
     unsafe { ::core::intrinsics::abort(); }
