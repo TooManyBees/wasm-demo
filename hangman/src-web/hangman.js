@@ -45,9 +45,7 @@ class Hangman {
     const len = stringBytes.byteLength;
     const ptr = this.module.alloc(len);
     const memory = new Uint8Array(this.module.memory.buffer);
-    for (let i = 0; i < len; i++) {
-      memory[ptr + i] = stringBytes[i];
-    }
+    memory.set(stringBytes, ptr);
     return { ptr, len };
   }
 
@@ -83,11 +81,11 @@ class Hangman {
   }
 
   byteView() {
-    return new ByteView(this);
+    return new MemoryViewer(this);
   }
 }
 
-class ByteView {
+class MemoryViewer {
   constructor(game) {
     this.handle = game.handle;
     this.module = game.module;

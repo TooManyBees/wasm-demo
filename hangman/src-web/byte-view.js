@@ -22,15 +22,15 @@
   // At what point does one say "yeah, I'll use a real declarative
   // frontend library like a normal human would"?
   const Bytes = {
-    init(byteView) {
-      this.byteView = byteView;
+    init(memoryViewer) {
+      this.memoryViewer = memoryViewer;
       this.setHangman();
       this.setPhrase();
       this.setMask();
       this.setGuessed();
     },
     setHangman() {
-      const bytes = this.byteView.hangman;
+      const bytes = this.memoryViewer.hangman;
       const phrase = document.createElement("span");
       phrase.setAttribute("hover", "phrase");
       phrase.textContent = bytes.slice(0, 3).join(", ");
@@ -56,7 +56,7 @@
       bytesNode.appendChild(new Text("]"));
     },
     setPhrase() {
-      const bytes = this.byteView.phrase;
+      const bytes = this.memoryViewer.phrase;
       const byteGroups = [];
       for (var i = 0; i < bytes.length; i += 4) {
         const group = document.createElement("span");
@@ -73,7 +73,7 @@
       bytesNode.replaceChild(new Text("]"), bytesNode.childNodes[bytesNode.childNodes.length-1]);
     },
     setMask() {
-      const bytes = this.byteView.mask;
+      const bytes = this.memoryViewer.mask;
       const bools = document.createElement("span");
       bools.textContent = bytes.join(", ");
       const bytesNode = document.getElementById("bytes-mask");
@@ -83,7 +83,7 @@
       bytesNode.appendChild(new Text("]"));
     },
     setGuessed() {
-      const bytes = this.byteView.guessed;
+      const bytes = this.memoryViewer.guessed;
       const byteGroups = [];
       for (var i = 0; i < bytes.length; i += 4) {
         const group = document.createElement("span");
