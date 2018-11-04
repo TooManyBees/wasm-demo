@@ -77,52 +77,43 @@ class Hangman {
   }
 
   lose() {
-    console.log("you have lost and dishonored your ancestors");
+    console.log("you have lost and everyone laughs at your misfortune");
   }
 
-  byteView() {
-    return new MemoryViewer(this);
-  }
-}
-
-class MemoryViewer {
-  constructor(game) {
-    this.handle = game.handle;
-    this.module = game.module;
-    this.cache = { buffer: game.module.memory.buffer };
-  }
-
-  invalidated() {
-    return !this.cache.buffer.byteLength;
-  }
-
-  get buffer() {
-    if (this.invalidated()) {
-      this.cache = { buffer: this.module.memory.buffer };
+  memoryViewer() {
+    const handle = this.handle;
+    const mod = this.module;
+    let cachedBuffer = this.module.memory.buffer;
+    let cachedHangman = null;
+    function invalidated() {
+      return !cachedBuffer.byteLength;
     }
-    return this.cache.buffer;
-  }
-
-  get hangman() {
-    if (this.invalidated() || !this.cache.hangman) {
-      const hangman = new Uint32Array(this.buffer, this.handle, this.module.size_of()/4);
-      this.cache.hangman = hangman;
+    function buffer() {
+      if (invalidated()) {
+        cachedBuffer = mod.memory.buffer;
+      }
+      return cachedBuffer;
     }
-    return this.cache.hangman;
-  }
-
-  get phrase() {
-    const hangman = this.hangman;
-    return new Uint32Array(this.buffer, hangman[0], hangman[1]);
-  }
-
-  get mask() {
-    const hangman = this.hangman;
-    return new Uint8ClampedArray(this.buffer, hangman[3], hangman[4]);
-  }
-
-  get guessed() {
-    const hangman = this.hangman;
-    return new Uint32Array(this.buffer, hangman[6], hangman[7]);
+    return {
+      get hangman() {
+        if (invalidated() || !cachedHangman) {
+          const hangman = new Uint32Array(cachedBuffer, handle, mod.size_of()/4);
+          cachedHangman = hangman;
+        }
+        return cachedHangman;
+      },
+      get phrase() {
+        const hangman = cachedHangman;
+        return new Uint32Array(cachedBuffer, hangman[0], hangman[1]);
+      },
+      get mask() {
+        const hangman = cachedHangman;
+        return new Uint8ClampedArray(cachedBuffer, hangman[3], hangman[4]);
+      },
+      get guessed() {
+        const hangman = cachedHangman;
+        return new Uint32Array(cachedBuffer, hangman[6], hangman[7]);
+      },
+    };
   }
 }

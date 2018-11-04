@@ -1,83 +1,77 @@
-(function(root) {
-  const initModal = document.getElementById("init-modal");
-  const initForm = document.getElementById("init-form");
-  const inputField = document.getElementById("input-field");
-  const input = document.getElementById("input");
-  const graphic = document.getElementById("graphic");
-  const unmasked = document.getElementById("unmasked");
-  const wrongGuessesDom = document.getElementById("wrong-guesses");
+const initModal = document.getElementById("init-modal");
+const initForm = document.getElementById("init-form");
+const inputField = document.getElementById("input-field");
+const input = document.getElementById("input");
+const graphic = document.getElementById("graphic");
+const unmasked = document.getElementById("unmasked");
+const wrongGuessesDom = document.getElementById("wrong-guesses");
 
-  let game = null;
-  function win() {
-    console.log("a winner is you!");
-    inputField.disabled = true;
-    inputField.placeholder = "";
-    graphic.classList.add("rainbowned");
-    const winner = document.createElement('div');
-    winner.textContent = "WINNER";
-    winner.classList.add('winner');
-    winner.classList.add('rainbowned');
-    document.body.appendChild(winner);
+function win() {
+  console.log("a winner is you!");
+  inputField.disabled = true;
+  inputField.placeholder = "";
+  graphic.classList.add("rainbowned");
+  const winner = document.createElement('div');
+  winner.textContent = "WINNER";
+  winner.classList.add('winner');
+  winner.classList.add('rainbowned');
+  document.body.appendChild(winner);
+}
+function lose() {
+  console.log("you have failed and everyone laughs at your misfortune");
+  inputField.disabled = true;
+  inputField.placeholder = "";
+}
+
+function guess(game, char) {
+  if (game.guess(char)) {
+    displayPhrase(game);
+  } else {
+    addWrongLetter(char);
+    displayGraphic(game);
   }
-  function lose() {
-    console.log("you have failed and dishonored your ancestors");
-    inputField.disabled = true;
-    inputField.placeholder = "";
+  ByteView.setHangman();
+  ByteView.setMask();
+  ByteView.setGuessed();
+}
+input.addEventListener("submit", function(e) {
+  e.preventDefault();
+  if (inputField.value) {
+    guess(window.game, inputField.value);
+    inputField.value = "";
   }
+});
 
-  function guess(game, char) {
-    if (game.guess(char)) {
-      displayPhrase(game);
-    } else {
-      addWrongLetter(char);
-      displayGraphic(game);
-    }
-    Bytes.setHangman();
-    Bytes.setMask();
-    Bytes.setGuessed();
+function displayGraphic(game) {
+  const remaining = game.guessesRemaining();
+  graphic.setAttribute("guesses", remaining.toString());
+}
+
+function displayPhrase(game) {
+  unmasked.textContent = game.unmasked();
+}
+
+const wrongGuesses = new Set();
+function addWrongLetter(char) {
+  if (!wrongGuesses.has(char)) {
+    wrongGuesses.add(char);
+    wrongGuessesDom.textContent = Array.from(wrongGuesses).sort().join("");
   }
-  input.addEventListener("submit", function(e) {
-    e.preventDefault();
-    if (inputField.value) {
-      guess(game, inputField.value);
-      inputField.value = "";
-    }
-  });
+}
 
-  function displayGraphic(game) {
-    const remaining = game.guessesRemaining();
-    graphic.setAttribute("guesses", remaining.toString());
+initModal.classList.remove("disabled");
+initForm.addEventListener("submit", function(e) {
+  e.preventDefault();
+  const phrase = document.getElementById("init-input").value;
+  if (phrase) {
+    window.game = new Hangman(phrase, {
+      win,
+      lose,
+      onload: (game) => {
+        displayPhrase(game)
+        ByteView.init(game.memoryViewer());
+        initModal.classList.add("disabled");
+      },
+    });
   }
-
-  function displayPhrase(game) {
-    unmasked.textContent = game.unmasked();
-  }
-
-  const wrongGuesses = new Set();
-  function addWrongLetter(char) {
-    if (!wrongGuesses.has(char)) {
-      wrongGuesses.add(char);
-      wrongGuessesDom.textContent = Array.from(wrongGuesses).sort().join("");
-    }
-  }
-
-  initModal.classList.remove("disabled");
-  initForm.addEventListener("submit", function(e) {
-    e.preventDefault();
-    const phrase = document.getElementById("init-input").value;
-    if (phrase) {
-      game = new Hangman(phrase, {
-        win,
-        lose,
-        onload: (game) => {
-          displayPhrase(game)
-          Bytes.init(game.byteView());
-          initModal.classList.add("disabled");
-        },
-      });
-      root.game = game;
-    }
-  });
-
-  root.guess = guess;
-})(window);
+});
